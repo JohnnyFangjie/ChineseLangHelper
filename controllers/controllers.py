@@ -192,6 +192,17 @@ class MainController(QMainWindow):
     def delete_lesson(self, filename: str):
         """Deletes a lesson"""
         print(f"Deleting lesson: {filename}")
+        
+        try:
+            if self.lesson_manager.delete_lesson(filename):
+                self.show_info("Success", f"Lesson file '{filename}' deleted successfully!")
+                self.refresh_lessons()
+                self.show_menu_view()
+            else:
+                self.show_error("Error", "Failed to delete lesson file")
+        
+        except Exception as e:
+            self.show_error("Error", f"Failed to delete lesson: {str(e)}")
 
     def show_error(self, title: str, message: str):
         """Show error message dialog"""
