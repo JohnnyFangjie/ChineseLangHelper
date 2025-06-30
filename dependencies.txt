@@ -1,0 +1,3 @@
+pycccedict
+pypinyin
+pyside6
