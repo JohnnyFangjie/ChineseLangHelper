@@ -105,3 +105,55 @@ class AddLessonModal(QDialog):
         self.description_input.clear()
         self.error_label.clear()
         self.name_input.setFocus()
+
+class ConfirmLessonDelete(QDialog):
+    """Modal for deleting a lesson"""
+
+    # Signal emitted when a lesson is deleted
+    deletion_confirmed = Signal(str) # filename
+
+    def __init__(self, filename, parent=None):
+        super().__init__(parent)
+        self.filename = filename
+        self.init_ui()
+    
+    def init_ui(self):
+        """Initialize the modal UI"""
+        self.setWindowTitle("Confirm delete")
+        self.setModal(True)
+        self.setFixedSize(400, 300)
+
+        layout = QVBoxLayout(self)
+
+        #Title
+        msg_label = QLabel("Are you sure you want to delete this lesson?")
+        msg_font = QFont()
+        msg_font.setPointSize(14)
+        msg_font.setBold(True)
+        msg_label.setFont(msg_font)
+        layout.addWidget(msg_label)
+
+        #Separator
+        separator = QFrame()
+        separator.setFrameShape(QFrame.HLine)
+        separator.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(separator)
+
+        #Buttons
+        button_layout = QHBoxLayout()
+        button_layout.addStretch
+    
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        button_layout.addWidget(self.cancel_button)
+
+        self.delete_button = QPushButton("Delete")
+        self.delete_button.clicked.connect(self.delete_lesson) # TO change
+        button_layout.addWidget(self.delete_button)
+
+        layout.addLayout(button_layout)
+
+    def delete_lesson(self):
+        """Handle lesson deletion"""
+        self.deletion_confirmed.emit(self.filename)
+        self.accept() # Close modal succesfully

@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtGui import QFont
 from typing import List, Callable
 from models.lesson import Lesson, Word
+from .modals import ConfirmLessonDelete
 
 class LessonView(QWidget):
     """View for displaying and managing a lesson's word list"""
@@ -19,12 +20,15 @@ class LessonView(QWidget):
     back_requested = Signal()
     word_added = Signal(str)  # Chinese text
     word_deleted = Signal(int)  # Row index - ADD THIS LINE
+
+    lesson_delete_requested = Signal(str) # filename
     
     def __init__(self):
         super().__init__()
         self.current_lesson = None
         self.display_words = []  # Words in current display order
         self.init_ui()
+        self.deleteLesson_modal = None
     
     def init_ui(self):
         """Initialize the user interface"""
@@ -66,13 +70,10 @@ class LessonView(QWidget):
         
         # Word table
         self._create_word_table(layout)
+
+        # Footer
+        self._create_footer(layout)
         
-        # Footer with file info
-        self.file_info_label = QLabel("")
-        self.file_info_label.setAlignment(Qt.AlignCenter)
-        self.file_info_label.setStyleSheet("color: gray; font-size: 10px;")
-        layout.addWidget(self.file_info_label)
-    
     def _create_controls_section(self, parent_layout):
         """Create the controls section with word count and toggles"""
         controls_layout = QHBoxLayout()
@@ -173,6 +174,23 @@ class LessonView(QWidget):
         
         parent_layout.addWidget(self.word_table)
     
+    def _create_footer(self, parent_layout):
+        footer_layout = QHBoxLayout()
+
+        self.delete_lesson_button = QPushButton("Delete Lesson") # Opens Confirmation Modal
+        self.delete_lesson_button.setMaximumWidth(100)
+        self.delete_lesson_button.clicked.connect(self.show_deleteLesson_modal)
+        footer_layout.addWidget(self.delete_lesson_button)
+
+
+        self.file_info_label = QLabel("")
+        self.file_info_label.setAlignment(Qt.AlignCenter)
+        self.file_info_label.setStyleSheet("color: gray; font-size: 10px;")
+        footer_layout.addWidget(self.file_info_label)
+
+        parent_layout.addLayout(footer_layout)
+
+
     def set_lesson(self, lesson: Lesson):
         """Set the current lesson and populate the view"""
         self.current_lesson = lesson
@@ -232,6 +250,16 @@ class LessonView(QWidget):
         # Apply current column visibility settings
         self._update_column_visibility()
     
+    def show_deleteLesson_modal(self):
+        """Show the Deletion Confirmation modal"""
+        if not self.deleteLesson_modal:
+            self.deleteLesson_modal = ConfirmLessonDelete(filename=self.current_lesson.filename)
+            self.deleteLesson_modal.deletion_confirmed.connect(self.lesson_delete_requested.emit)
+        
+
+        
+        self.deleteLesson_modal.exec()
+
     def _toggle_chinese_column(self, checked):
         """Toggle visibility of Chinese column"""
         self.word_table.setColumnHidden(0, not checked)

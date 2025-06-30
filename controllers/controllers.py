@@ -65,7 +65,7 @@ class MainController(QMainWindow):
         self.lesson_view.back_requested.connect(self.show_menu_view)
         self.lesson_view.word_added.connect(self.add_word_to_lesson)
         self.lesson_view.word_deleted.connect(self.delete_word_from_lesson)
-
+        self.lesson_view.lesson_delete_requested.connect(self.delete_lesson)
     
     def show_menu_view(self):
         """Switch to menu view"""
@@ -188,6 +188,10 @@ class MainController(QMainWindow):
                 
         except Exception as e:
             self.show_error("Error", f"Failed to create lesson: {str(e)}")
+
+    def delete_lesson(self, filename: str):
+        """Deletes a lesson"""
+        print(f"Deleting lesson: {filename}")
 
     def show_error(self, title: str, message: str):
         """Show error message dialog"""
