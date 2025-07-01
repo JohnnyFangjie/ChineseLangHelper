@@ -17,9 +17,10 @@ class LessonView(QWidget):
     # Signals
     back_requested = Signal()
     word_added = Signal(str)  # Chinese text
-    back_requested = Signal()
-    word_added = Signal(str)  # Chinese text
     word_deleted = Signal(int)  # Row index - ADD THIS LINE
+
+    lesson_name_changed = Signal(str)
+    lesson_description_changed = Signal(str)
 
     lesson_delete_requested = Signal(str) # filename
     
@@ -41,8 +42,10 @@ class LessonView(QWidget):
         layout.addWidget(self.back_button, alignment=Qt.AlignLeft)
         
         # Lesson title (second row)
-        self.lesson_title_label = QLabel("")
+        self.lesson_title_label = QLineEdit("")
         self.lesson_title_label.setAlignment(Qt.AlignLeft)
+        self.lesson_title_label.setMaximumWidth(300)
+        self.lesson_title_label.returnPressed.connect(self.on_name_changed)
         lesson_font = QFont("SimSun")
         lesson_font.setPointSize(16)
         lesson_font.setBold(True)
@@ -50,10 +53,10 @@ class LessonView(QWidget):
         layout.addWidget(self.lesson_title_label)
         
         # Lesson description (third row)
-        self.lesson_description_label = QLabel("")
+        self.lesson_description_label = QLineEdit("")
         self.lesson_description_label.setAlignment(Qt.AlignLeft)
-        self.lesson_description_label.setWordWrap(True)
         self.lesson_description_label.setStyleSheet("color: gray; margin-bottom: 10px;")
+        self.lesson_description_label.returnPressed.connect(self.on_description_changed)
         layout.addWidget(self.lesson_description_label)
         
         # Controls row
@@ -256,8 +259,6 @@ class LessonView(QWidget):
             self.deleteLesson_modal = ConfirmLessonDelete(filename=self.current_lesson.filename)
             self.deleteLesson_modal.deletion_confirmed.connect(self.lesson_delete_requested.emit)
         
-
-        
         self.deleteLesson_modal.exec()
 
     def _toggle_chinese_column(self, checked):
@@ -334,4 +335,15 @@ class LessonView(QWidget):
     def word_delete_error(self, message: str):
         """Handle word deletion error from controller"""
         self.set_add_word_status(message, "red")
-        
+
+    def on_name_changed(self):
+        text = self.lesson_title_label.text()
+        # print(f"Enter pressed, text: {text}")
+
+        self.lesson_name_changed.emit(text)
+
+    def on_description_changed(self):
+        text = self.lesson_description_label.text()
+        # print(f"Enter pressed, text: {text}")
+
+        self.lesson_description_changed.emit(text)

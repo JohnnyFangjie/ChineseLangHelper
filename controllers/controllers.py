@@ -66,6 +66,9 @@ class MainController(QMainWindow):
         self.lesson_view.word_added.connect(self.add_word_to_lesson)
         self.lesson_view.word_deleted.connect(self.delete_word_from_lesson)
         self.lesson_view.lesson_delete_requested.connect(self.delete_lesson)
+        self.lesson_view.lesson_name_changed.connect(self.update_lesson_name)
+        self.lesson_view.lesson_description_changed.connect(self.update_lesson_description)
+
     
     def show_menu_view(self):
         """Switch to menu view"""
@@ -189,9 +192,31 @@ class MainController(QMainWindow):
         except Exception as e:
             self.show_error("Error", f"Failed to create lesson: {str(e)}")
 
+    def update_lesson_name(self, name: str):
+        """Updates the Lesson Name"""
+        # print(f"Updating name to: {name}")
+
+        try:
+            self.current_lesson.name = name
+            if not self.lesson_manager.save_lesson(self.current_lesson):
+                return
+
+        except Exception as e:
+            self.show_error("Error", e)
+
+    def update_lesson_description(self, description: str):
+        # print(f"Updating the description to: {description}")
+
+        try:
+            self.current_lesson.description = description
+            if not self.lesson_manager.save_lesson(self.current_lesson):
+                return
+        except Exception as e:
+            self.show_error("Error", e)
+
     def delete_lesson(self, filename: str):
         """Deletes a lesson"""
-        print(f"Deleting lesson: {filename}")
+        # print(f"Deleting lesson: {filename}")
         
         try:
             if self.lesson_manager.delete_lesson(filename):

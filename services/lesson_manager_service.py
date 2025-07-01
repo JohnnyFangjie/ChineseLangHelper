@@ -142,3 +142,11 @@ class LessonManager:
         """Get information for all lesson files"""
         lesson_files = self.get_lesson_files()
         return [self.get_lesson_info(filename) for filename in sorted(lesson_files)]
+
+    def update_name(self):
+        pass
+
+    def update_description(self):
+        pass
+
+    
