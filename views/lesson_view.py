@@ -255,9 +255,8 @@ class LessonView(QWidget):
     
     def show_deleteLesson_modal(self):
         """Show the Deletion Confirmation modal"""
-        if not self.deleteLesson_modal:
-            self.deleteLesson_modal = ConfirmLessonDelete(filename=self.current_lesson.filename)
-            self.deleteLesson_modal.deletion_confirmed.connect(self.lesson_delete_requested.emit)
+        self.deleteLesson_modal = ConfirmLessonDelete(filename=self.current_lesson.filename)
+        self.deleteLesson_modal.deletion_confirmed.connect(self.lesson_delete_requested.emit)
         
         self.deleteLesson_modal.exec()
 

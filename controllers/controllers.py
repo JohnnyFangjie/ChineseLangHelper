@@ -10,6 +10,7 @@ from services.chinese_lang_service import chinese_service
 from views.menu_view import MenuView
 from views.lesson_view import LessonView
 from views.modals import AddLessonModal
+import secrets
 
 
 
@@ -179,7 +180,7 @@ class MainController(QMainWindow):
             new_lesson = Lesson(name=name, description=description, words=[])
             
             # Generate filename (you might want to sanitize the name)
-            filename = f"{name.lower().replace(' ', '_')}.json"
+            filename = f"{secrets.token_hex(8)}.json"
             new_lesson.filename = filename
             
             # Save the lesson
