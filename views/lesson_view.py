@@ -158,14 +158,24 @@ class LessonView(QWidget):
         
         # Configure table appearance
         header = self.word_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.Stretch)  # Chinese column stretches
-        header.setSectionResizeMode(1, QHeaderView.Stretch)  # Pinyin column stretches  
-        header.setSectionResizeMode(2, QHeaderView.Stretch)  # English column stretches
-        header.setSectionResizeMode(3, QHeaderView.Fixed)    # Delete column fixed width
-        
-        # Set the delete column to be narrow
+        header.setMinimumSectionSize(80) # Global minimum 
+
+        #Chinese Column
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.word_table.setColumnWidth(0, 100)
+
+        # Pinyin Column
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.word_table.setColumnWidth(1, 120)
+
+        # English Column
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+
+        # Delete Column
+        header.setSectionResizeMode(3, QHeaderView.Fixed)
         self.word_table.setColumnWidth(3, 60)
         
+        header.setStretchLastSection(False)
         self.word_table.setAlternatingRowColors(True)
         self.word_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.word_table.setEditTriggers(QTableWidget.NoEditTriggers)
