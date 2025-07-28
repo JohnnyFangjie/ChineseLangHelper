@@ -3,10 +3,10 @@ Menu view for selecting lessons
 """
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                             QLabel, QScrollArea, QGridLayout)
+                             QLabel, QScrollArea, QGridLayout, QFileDialog)
 from PySide6.QtGui import QFont
 from typing import List, Dict, Any, Callable
-from .modals import AddLessonModal
+from .modals import AddLessonModal, ConfirmLessonDelete
 
 
 class MenuView(QWidget):
@@ -15,6 +15,8 @@ class MenuView(QWidget):
     # Signal emitted when a lesson is selected
     lesson_selected = Signal(str)  # filename
     add_lesson_requested = Signal(str, str)
+    delete_lesson_requested = Signal(str)
+    import_lesson_requested = Signal()
     
     def __init__(self):
         super().__init__()
@@ -49,7 +51,7 @@ class MenuView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         
-        # Widget to contain the buttons
+        # Widget to contain the lesson buttons to open the lesson
         self.button_widget = QWidget()
         self.button_layout = QGridLayout(self.button_widget)
         self.button_layout.setSpacing(10)
@@ -71,6 +73,12 @@ class MenuView(QWidget):
         self.addLesson_button.clicked.connect(self.show_addLeson_modal)
         controls_layout.addWidget(self.addLesson_button)
         
+        # Import Lesson
+        self.importLesson_button = QPushButton("Import Lesson")
+        self.importLesson_button.setMaximumWidth(150)
+        self.importLesson_button.clicked.connect(self.import_lesson_requested.emit)
+        controls_layout.addWidget(self.importLesson_button)
+
         # Add some stretch to center the refresh button
         controls_layout.addStretch()
         
@@ -128,12 +136,44 @@ class MenuView(QWidget):
             tooltip += f"\nError: {lesson_info['error']}"
             button.setEnabled(False)
             button.setStyleSheet("color: gray;")
-        
         button.setToolTip(tooltip)
         
-        # Connect button to signal
+        # Create small delete button
+        delete_btn = QPushButton("×", button)  # Using × symbol
+        delete_btn.setFixedSize(20, 20)
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #ff4444;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #ff6666;
+            }
+            QPushButton:pressed {
+                background-color: #cc3333;
+            }
+        """)
+        delete_btn.setToolTip("Delete lesson")
+        
+        # Position delete button in top-right corner
+        delete_btn.move(button.width() - 25, 5)
+        
+        # Handle resize to keep delete button in corner
+        def on_resize():
+            delete_btn.move(button.width() - 25, 5)
+        
+        button.resizeEvent = lambda event: (QPushButton.resizeEvent(button, event), on_resize())[1]
+        
+        # Connect main button to signal
         filename = lesson_info['filename']
         button.clicked.connect(lambda: self.lesson_selected.emit(filename))
+        
+        # Connect delete button - you can connect this to your deletion logic
+        delete_btn.clicked.connect(lambda: self.show_deleteLesson_modal(filename))
         
         return button
 
@@ -149,6 +189,14 @@ class MenuView(QWidget):
         self.addLesson_modal.reset()
         self.addLesson_modal.exec()  # This blocks until modal is closed
     
+    
+    def show_deleteLesson_modal(self, filename):
+            """Show the Deletion Confirmation modal"""
+            self.deleteLesson_modal = ConfirmLessonDelete(filename=filename)
+            self.deleteLesson_modal.deletion_confirmed.connect(self.delete_lesson_requested.emit)
+            
+            self.deleteLesson_modal.exec()
+
     def _show_no_files_message(self):
         """Show message when no lesson files are found"""
         no_files_label = QLabel("No JSON files found in the data folder.\n"

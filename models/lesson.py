@@ -10,6 +10,7 @@ class Lesson:
     name: str
     description: str
     words: List[Word]
+    is_valid_json: bool
     filename: Optional[str] = None
     
     def __post_init__(self):
@@ -41,7 +42,8 @@ class Lesson:
         return {
             'name': self.name,
             'description': self.description,
-            'words': [word.to_dict() for word in self.words]
+            'words': [word.to_dict() for word in self.words],
+            'is_valid_json': self.is_valid_json
         }
     
     @classmethod
@@ -54,6 +56,7 @@ class Lesson:
             name=data.get('name', 'Unknown Lesson'),
             description=data.get('description', ''),
             words=words,
+            is_valid_json=data.get('is_valid_json', True),
             filename=filename
         )
     
@@ -62,6 +65,8 @@ class Lesson:
         """Load lesson from JSON file"""
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
+            if not data["is_valid_json"]:
+                return
         
         filename = os.path.basename(filepath)
         return cls.from_dict(data, filename)

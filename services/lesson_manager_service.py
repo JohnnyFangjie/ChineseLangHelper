@@ -102,12 +102,24 @@ class LessonManager:
             print(f"Error saving lesson: {e}")
             return False
     
+    def import_lesson(self, lesson: Lesson) -> bool:
+        filepath = os.path.join(self.data_folder, lesson.filename)
+
+        try:
+            lesson.save_to_file(filepath)
+            return True
+        except Exception as e:
+            print(f"Error saving lesson: {e}")
+            return False
+
+    
     def create_new_lesson(self, name: str, description: str = "") -> Lesson:
         """Create a new empty lesson"""
         return Lesson(
             name=name,
             description=description,
-            words=[]
+            is_valid_json=True,
+            words=[],
         )
     
     def delete_lesson(self, filename: str) -> bool:
@@ -142,4 +154,3 @@ class LessonManager:
         """Get information for all lesson files"""
         lesson_files = self.get_lesson_files()
         return [self.get_lesson_info(filename) for filename in sorted(lesson_files)]
-    

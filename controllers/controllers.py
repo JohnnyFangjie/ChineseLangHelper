@@ -1,7 +1,7 @@
 """
 Main application controller that coordinates between models, views, and services
 """
-from PySide6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QStackedWidget, QMessageBox, QFileDialog
 from PySide6.QtCore import QObject
 from models.lesson import Lesson
 from models.word import Word
@@ -61,6 +61,8 @@ class MainController(QMainWindow):
         self.menu_view.lesson_selected.connect(self.load_lesson)
         self.menu_view.connect_refresh(self.refresh_lessons)
         self.menu_view.add_lesson_requested.connect(self.add_new_lesson)
+        self.menu_view.delete_lesson_requested.connect(self.delete_lesson)
+        self.menu_view.import_lesson_requested.connect(self.show_select_lesson_import)
 
         # Lesson view signals
         self.lesson_view.back_requested.connect(self.show_menu_view)
@@ -177,7 +179,7 @@ class MainController(QMainWindow):
         """Create a new lesson from modal input"""
         try:
             # Create new lesson object
-            new_lesson = Lesson(name=name, description=description, words=[])
+            new_lesson = Lesson(name=name, description=description, words=[], is_valid_json=True)
             
             # Generate filename (you might want to sanitize the name)
             filename = f"{secrets.token_hex(8)}.json"
@@ -192,6 +194,18 @@ class MainController(QMainWindow):
                 
         except Exception as e:
             self.show_error("Error", f"Failed to create lesson: {str(e)}")
+
+    def add_imported_lesson(self, lesson: Lesson):
+        try:
+            if self.lesson_manager.import_lesson(lesson):
+                self.show_info("Success",  "Lesson imported.")
+                self.refresh_lessons()  # Refresh the lesson list
+            else:
+                self.show_error("Error", "Failed to create lesson file")
+                
+        except Exception as e:
+            self.show_error("Error", f"Failed to create lesson: {str(e)}")
+
 
     def update_lesson_name(self, name: str):
         """Updates the Lesson Name"""
@@ -241,3 +255,28 @@ class MainController(QMainWindow):
     def show_warning(self, title: str, message: str):
         """Show warning message dialog"""
         QMessageBox.warning(self, title, message)
+
+    def show_select_lesson_import(self):
+        """Open file explorer to select a JSON file for lesson import."""
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.ExistingFiles)
+        file_dialog.setNameFilter("JSON files (*.json)")
+        file_dialog.setViewMode(QFileDialog.Detail)
+        file_dialog.setWindowTitle("Select Lesson File to Import")
+        
+        if file_dialog.exec():
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                # print(selected_files)
+                for file in selected_files:
+                    print(f"Selected file: {file}")
+                    curr_lesson = self.lesson_manager.load_lesson(file)
+                    self.add_imported_lesson(curr_lesson)
+
+                
+            self.refresh_lessons()
+                # Add your import logic here
+                # For example: self.import_lesson_file(json_file_path)
+                # return selected_files
+        
+        return 
